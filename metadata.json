@@ -1,0 +1,6 @@
+{
+  "name": "사선형 버티칼 블라인드 제작 자동화 솔루션",
+  "description": "경사형·사선형 버티칼 블라인드의 슬랫별 정밀 재단 치수, 레일 각도, 공정 마진 자동 계산 및 공장 작업지시서 인쇄와 엑셀 내보내기 생산 솔루션",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
