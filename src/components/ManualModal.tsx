@@ -65,30 +65,36 @@ export const ManualModal: React.FC<ManualModalProps> = ({ onClose }) => {
             <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 space-y-1">
               <span className="text-amber-400 font-bold block">2. Sloped Headrail Cut Length (L_rail)</span>
               <code className="text-neutral-200 block font-mono bg-neutral-900 p-1.5 rounded">
-                L_rail = √( W² + ΔH² )
+                W_track = W - 20mm (10mm L + 10mm R)
+                <br />
+                L_rail = W_track / cos(θ)
               </code>
               <p className="text-neutral-400 text-[11px]">
-                Pythagorean hypotenuse for precision aluminium headrail profile cutting.
+                Calculated on net track width after 10mm left and right clearance deductions.
               </p>
             </div>
 
             <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 space-y-1">
-              <span className="text-amber-400 font-bold block">3. Slat Center Position (x_k)</span>
+              <span className="text-amber-400 font-bold block">3. Carrier Position & Zero Overhang (X_k)</span>
               <code className="text-neutral-200 block font-mono bg-neutral-900 p-1.5 rounded">
-                x_k = (k - 0.5) × (W / N)
+                X_1 = 44.5mm (half of 89mm slat)
+                <br />
+                X_k = 44.5 + (k - 1) × p_actual
               </code>
               <p className="text-neutral-400 text-[11px]">
-                Equal horizontal division across total slat count N (in sheets).
+                Slat #1 starts @ 44.5mm so the outer fabric edge exactly bounds track start (X=0) with zero overhang.
               </p>
             </div>
 
             <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 space-y-1">
               <span className="text-amber-400 font-bold block">4. Slat Center Opening Height (H_win)</span>
               <code className="text-neutral-200 block font-mono bg-neutral-900 p-1.5 rounded">
-                H_win(k) = HL + (ΔH / W) × x_k
+                x_open = 10mm + X_k
+                <br />
+                H_win(k) = HL + (ΔH / W) × x_open
               </code>
               <p className="text-neutral-400 text-[11px]">
-                Linear interpolation at each slat carrier centerline.
+                Linear opening drop calculated at the exact position inside the window opening.
               </p>
             </div>
           </div>

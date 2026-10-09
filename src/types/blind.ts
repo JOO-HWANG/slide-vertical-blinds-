@@ -19,6 +19,9 @@ export interface BlindInput {
   fTop: number; // Top hem allowance for hanger insert (default 20)
   fBottom: number; // Bottom pocket allowance for weight plate (default 50)
   pitch: number; // Slat carrier pitch (default 76 for 89mm, 115 for 127mm)
+  trackDeductionLeft?: number; // Left clearance margin for track (default 10mm)
+  trackDeductionRight?: number; // Right clearance margin for track (default 10mm)
+  firstSlatOffsetX?: number; // First slat center X from track start (default 44.5mm for 89mm slat)
 
   // Job Order Info
   projectName: string;
@@ -37,7 +40,8 @@ export interface BlindInput {
 export interface SlatCalculationItem {
   id: number;
   index: number; // Slat No. (1, 2, ... N)
-  positionX: number; // Slat center X coordinate from left edge (mm)
+  positionX: number; // Slat center X coordinate from track start (starts at 44.5mm)
+  openingPositionX: number; // Slat center X coordinate from window opening left edge (10mm + positionX)
   windowHeight: number; // Raw opening height at slat center (mm)
   finishedHeight: number; // Finished drop height (mm)
   cutLength: number; // Actual fabric cutting length with hems (mm)
@@ -97,6 +101,12 @@ export interface CalculationResult {
   deltaH: number; // HR - HL (mm)
   angleDeg: number; // Slope angle in degrees
   railLength: number; // True sloped rail length (mm)
+  openingWidth: number; // Overall window opening width (mm)
+  trackWidth: number; // Track horizontal width after 10mm L + 10mm R deductions (mm)
+  trackDeductionLeft: number; // Left clearance (mm, default 10)
+  trackDeductionRight: number; // Right clearance (mm, default 10)
+  trackDeductionTotal: number; // Total clearance (20mm)
+  firstSlatOffsetX: number; // First slat center X from track start (44.5mm)
   totalCutLengthMeters: number; // Total linear fabric length (m)
   totalCutLengthWithWaste: number; // Fabric with +5% safety allowance (m)
   minCutLength: number;

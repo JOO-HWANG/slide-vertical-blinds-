@@ -200,7 +200,10 @@ export const CuttingTable: React.FC<CuttingTableProps> = ({
             <tr>
               <th className="py-2.5 px-3 text-center w-12">Check</th>
               <th className="py-2.5 px-3 text-center w-16">No.</th>
-              <th className="py-2.5 px-3 text-right">Position X</th>
+              <th className="py-2.5 px-3 text-right" title="Carrier position on headrail (Starts at 44.5mm)">
+                <div>Track X (mm)</div>
+                <div className="text-[10px] text-amber-400/80 font-normal">Starts @ 44.5mm</div>
+              </th>
               <th className="py-2.5 px-3 text-right">Opening Height</th>
               <th className="py-2.5 px-3 text-right">Finished Drop</th>
               <th className="py-2.5 px-4 text-right bg-amber-500/10 text-amber-300 font-bold border-x border-amber-500/20">
@@ -266,8 +269,9 @@ export const CuttingTable: React.FC<CuttingTableProps> = ({
                   </td>
 
                   {/* Position X */}
-                  <td className="py-2 px-3 text-right text-neutral-400 tabular-nums">
-                    {slat.positionX.toLocaleString()} mm
+                  <td className="py-2 px-3 text-right tabular-nums">
+                    <div className="text-amber-300 font-semibold">{slat.positionX.toLocaleString()} mm</div>
+                    <div className="text-[10px] text-neutral-500">Open {slat.openingPositionX ?? (slat.positionX + 10)}mm</div>
                   </td>
 
                   {/* Window opening height */}

@@ -194,27 +194,27 @@ export const WorkOrderPrintView: React.FC<WorkOrderPrintViewProps> = ({
           <table className="w-full text-xs border border-neutral-400 mb-4 text-center">
             <thead className="bg-neutral-200 font-bold">
               <tr>
-                <th className="border border-neutral-400 py-1">Width (W)</th>
+                <th className="border border-neutral-400 py-1">Opening Width</th>
+                <th className="border border-neutral-400 py-1">Track Width</th>
                 <th className="border border-neutral-400 py-1">Left Drop (HL)</th>
                 <th className="border border-neutral-400 py-1">Right Drop (HR)</th>
-                <th className="border border-neutral-400 py-1">Drop Delta (ΔH)</th>
-                <th className="border border-neutral-400 py-1">Headrail Cut Length</th>
+                <th className="border border-neutral-400 py-1">Headrail Cut</th>
                 <th className="border border-neutral-400 py-1">Slope Angle</th>
-                <th className="border border-neutral-400 py-1">Top Deduction</th>
-                <th className="border border-neutral-400 py-1">Bottom Clearance</th>
+                <th className="border border-neutral-400 py-1">Slat 1 Inset</th>
+                <th className="border border-neutral-400 py-1">Deductions (Top/Bot)</th>
                 <th className="border border-neutral-400 py-1">Hem Allowances</th>
               </tr>
             </thead>
             <tbody className="font-mono">
               <tr>
-                <td className="border border-neutral-400 py-1 font-bold">{input.width} mm</td>
+                <td className="border border-neutral-400 py-1 font-bold">{result.openingWidth} mm</td>
+                <td className="border border-neutral-400 py-1 font-bold text-amber-900">{result.trackWidth} mm (-10L/-10R)</td>
                 <td className="border border-neutral-400 py-1">{input.heightLeft} mm</td>
                 <td className="border border-neutral-400 py-1">{input.heightRight} mm</td>
-                <td className="border border-neutral-400 py-1 font-bold">{result.deltaH} mm</td>
                 <td className="border border-neutral-400 py-1 font-bold text-blue-900">{result.railLength} mm</td>
                 <td className="border border-neutral-400 py-1 font-bold">{result.angleDeg}°</td>
-                <td className="border border-neutral-400 py-1">-{input.dTop} mm</td>
-                <td className="border border-neutral-400 py-1">-{input.dBottom} mm</td>
+                <td className="border border-neutral-400 py-1 font-bold">X = {result.firstSlatOffsetX} mm</td>
+                <td className="border border-neutral-400 py-1">-{input.dTop} / -{input.dBottom} mm</td>
                 <td className="border border-neutral-400 py-1 font-bold">+{input.fTop + input.fBottom} mm</td>
               </tr>
             </tbody>

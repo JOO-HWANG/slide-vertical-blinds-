@@ -96,41 +96,77 @@ export function calculateBlind(
   const fBottom = Math.max(0, Number(input.fBottom) || 0);
   const totalHemAllowance = fTop + fBottom;
 
-  const N = Math.max(1, Math.ceil(W / pitch));
-  const pActual = W / N;
+  // Track Deductions: 10mm Left and 10mm Right clearance margin (Total 20mm deduction)
+  const trackDeductionLeft = input.trackDeductionLeft !== undefined ? Math.max(0, Number(input.trackDeductionLeft)) : 10;
+  const trackDeductionRight = input.trackDeductionRight !== undefined ? Math.max(0, Number(input.trackDeductionRight)) : 10;
+  const trackDeductionTotal = trackDeductionLeft + trackDeductionRight;
+  const trackWidth = Math.max(50, W - trackDeductionTotal);
 
+  // Slope geometry
   const deltaH = HR - HL;
   const angleRad = Math.atan(Math.abs(deltaH) / W);
   const angleDeg = Number((angleRad * (180 / Math.PI)).toFixed(1));
 
+  // Sloped Track Cut Length along profile
   let railLength = 0;
   if (input.shapeType === 'gable_peak') {
-    const peakX = W * (input.gablePeakRatio || 0.5);
+    const peakRatio = input.gablePeakRatio || 0.5;
+    const peakX = W * peakRatio;
     const peakH = Math.max(HL, HR, Number(input.gablePeakHeight) || Math.max(HL, HR) + 300);
-    const leftSlope = Math.sqrt(Math.pow(peakX, 2) + Math.pow(peakH - HL, 2));
-    const rightSlope = Math.sqrt(Math.pow(W - peakX, 2) + Math.pow(peakH - HR, 2));
+    const leftTrackSpan = Math.max(20, peakX - trackDeductionLeft);
+    const rightTrackSpan = Math.max(20, (W - peakX) - trackDeductionRight);
+    const leftRad = Math.atan(Math.abs(peakH - HL) / peakX);
+    const rightRad = Math.atan(Math.abs(peakH - HR) / (W - peakX));
+    const leftSlope = leftTrackSpan / Math.cos(leftRad);
+    const rightSlope = rightTrackSpan / Math.cos(rightRad);
     railLength = Number((leftSlope + rightSlope).toFixed(1));
+  } else if (input.shapeType === 'level') {
+    railLength = trackWidth;
   } else {
-    railLength = Number(Math.sqrt(Math.pow(W, 2) + Math.pow(deltaH, 2)).toFixed(1));
+    const cosVal = Math.cos(angleRad);
+    railLength = cosVal > 0 ? Number((trackWidth / cosVal).toFixed(1)) : trackWidth;
+  }
+
+  // Slat positions:
+  // First slat center is at 44.5mm (half of 89mm louvre) so slat edge does not exceed track start (X = 0)
+  const fabricHalfWidth = input.fabricWidth === 127 ? 63.5 : 44.5;
+  const firstSlatOffsetX = input.firstSlatOffsetX !== undefined ? Number(input.firstSlatOffsetX) : fabricHalfWidth;
+  const lastSlatOffsetX = Math.max(firstSlatOffsetX, trackWidth - firstSlatOffsetX);
+  const carrierSpan = lastSlatOffsetX - firstSlatOffsetX;
+
+  let N = 1;
+  let pActual = 0;
+  if (carrierSpan <= 0) {
+    N = 1;
+    pActual = 0;
+  } else {
+    const intervals = Math.max(1, Math.round(carrierSpan / pitch));
+    N = intervals + 1;
+    pActual = carrierSpan / intervals;
   }
 
   const slats: SlatCalculationItem[] = [];
   let prevCutLength = 0;
 
   for (let k = 1; k <= N; k++) {
-    const xK = (k - 0.5) * pActual;
+    // Slat center X coordinate on track (starts at 44.5mm)
+    const xK_track = N === 1 ? firstSlatOffsetX : (firstSlatOffsetX + (k - 1) * pActual);
+
+    // Slat center X coordinate in window opening (track is inset 10mm from opening wall)
+    const xK_opening = trackDeductionLeft + xK_track;
+
     let hWinK = HL;
     let localAngle = angleDeg;
 
     if (input.shapeType === 'gable_peak') {
       const peakX = W * (input.gablePeakRatio || 0.5);
       const peakH = Math.max(HL, HR, Number(input.gablePeakHeight) || Math.max(HL, HR) + 300);
-      if (xK <= peakX) {
-        hWinK = HL + ((peakH - HL) / peakX) * xK;
+      if (xK_opening <= peakX) {
+        hWinK = HL + ((peakH - HL) / peakX) * xK_opening;
         const rad = Math.atan(Math.abs(peakH - HL) / peakX);
         localAngle = Number((rad * (180 / Math.PI)).toFixed(1));
       } else {
-        hWinK = peakH + ((HR - peakH) / (W - peakX)) * (xK - peakX);
+        hWinK = peakH + ((HR - peakH) / (W - peakX)) * (xK_opening - peakX);
         const rad = Math.atan(Math.abs(HR - peakH) / (W - peakX));
         localAngle = Number((rad * (180 / Math.PI)).toFixed(1));
       }
@@ -138,7 +174,7 @@ export function calculateBlind(
       hWinK = HL;
       localAngle = 0;
     } else {
-      hWinK = HL + (deltaH / W) * xK;
+      hWinK = HL + (deltaH / W) * xK_opening;
     }
 
     const hFinished = Math.max(50, Math.round(hWinK - dTop - dBottom));
@@ -146,19 +182,20 @@ export function calculateBlind(
     const stepDiff = k === 1 ? 0 : Math.round(hCut - prevCutLength);
     prevCutLength = hCut;
 
-    // Carrier rail coordinate
+    // Carrier rail coordinate along sloped track
     let carrierRailDist = 0;
     if (input.shapeType !== 'gable_peak') {
       const cosVal = Math.cos(angleRad);
-      carrierRailDist = cosVal > 0 ? Number((xK / cosVal).toFixed(1)) : xK;
+      carrierRailDist = cosVal > 0 ? Number((xK_track / cosVal).toFixed(1)) : xK_track;
     } else {
-      carrierRailDist = Number(xK.toFixed(1));
+      carrierRailDist = Number(xK_track.toFixed(1));
     }
 
     slats.push({
       id: k,
       index: k,
-      positionX: Number(xK.toFixed(1)),
+      positionX: Number(xK_track.toFixed(1)),
+      openingPositionX: Number(xK_opening.toFixed(1)),
       windowHeight: Math.round(hWinK),
       finishedHeight: hFinished,
       cutLength: hCut,
@@ -191,6 +228,12 @@ export function calculateBlind(
     deltaH: Math.round(deltaH),
     angleDeg,
     railLength,
+    openingWidth: W,
+    trackWidth,
+    trackDeductionLeft,
+    trackDeductionRight,
+    trackDeductionTotal,
+    firstSlatOffsetX,
     totalCutLengthMeters,
     totalCutLengthWithWaste,
     minCutLength,

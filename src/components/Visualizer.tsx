@@ -52,6 +52,25 @@ export const Visualizer: React.FC<VisualizerProps> = ({
   const originX = padLeft + (innerW - drawnW) / 2;
   const floorY = svgH - padBottom;
 
+  // Track Deductions & Coordinates
+  const dLeft = result.trackDeductionLeft ?? 10;
+  const dRight = result.trackDeductionRight ?? 10;
+  const trackStartX = originX + dLeft * scale;
+  const trackEndX = originX + (W - dRight) * scale;
+  const trackDrawnW = trackEndX - trackStartX;
+
+  // Height along slope for track ends
+  let trackStartH = HL;
+  let trackEndH = HR;
+  if (input.shapeType === 'right_high' || input.shapeType === 'left_high') {
+    const deltaH = HR - HL;
+    trackStartH = HL + (deltaH / W) * dLeft;
+    trackEndH = HL + (deltaH / W) * (W - dRight);
+  } else if (input.shapeType === 'level') {
+    trackStartH = HL;
+    trackEndH = HL;
+  }
+
   // Window frame path
   let windowPath = '';
   let railPath = '';
@@ -63,37 +82,43 @@ export const Visualizer: React.FC<VisualizerProps> = ({
     const drawnPeakY = floorY - peakH * scale;
 
     windowPath = `M ${originX} ${floorY} L ${originX + drawnW} ${floorY} L ${originX + drawnW} ${floorY - drawnHR} L ${drawnPeakX} ${drawnPeakY} L ${originX} ${floorY - drawnHL} Z`;
-    railPath = `M ${originX} ${floorY - drawnHL} L ${drawnPeakX} ${drawnPeakY} L ${originX + drawnW} ${floorY - drawnHR}`;
+    
+    // Sloped Track Path inside clearances
+    const startY = floorY - (HL + ((peakH - HL) / peakX) * dLeft) * scale;
+    const endY = floorY - (HR + ((peakH - HR) / (W - peakX)) * dRight) * scale;
+    railPath = `M ${trackStartX} ${startY} L ${drawnPeakX} ${drawnPeakY} L ${trackEndX} ${endY}`;
   } else {
     windowPath = `M ${originX} ${floorY} L ${originX + drawnW} ${floorY} L ${originX + drawnW} ${floorY - drawnHR} L ${originX} ${floorY - drawnHL} Z`;
-    railPath = `M ${originX} ${floorY - drawnHL} L ${originX + drawnW} ${floorY - drawnHR}`;
+    railPath = `M ${trackStartX} ${floorY - trackStartH * scale} L ${trackEndX} ${floorY - trackEndH * scale}`;
   }
 
   // Calculate stack movement
   const stackDirection = input.stackType; // 'high_side', 'low_side', 'split', 'left', 'right'
   const isHighSideRight = HR >= HL;
 
-  const getSlatVisualX = (slatIndex: number, originalX: number): number => {
-    if (stackPercent === 0) return originX + originalX * scale;
+  const getSlatVisualX = (slatIndex: number, originalPositionX: number): number => {
+    // originalPositionX is relative to track start (starts at 44.5mm)
+    const baseVisualX = trackStartX + originalPositionX * scale;
+    if (stackPercent === 0) return baseVisualX;
 
     const N = result.totalSlats;
     const factor = stackPercent / 100;
     const carrierBunchThickness = 9; // mm per compressed carrier
 
-    let targetX = originalX;
+    let targetX = originalPositionX;
     if (
       stackDirection === 'high_side' ? isHighSideRight :
       stackDirection === 'right' || (stackDirection !== 'left' && isHighSideRight)
     ) {
       // Stack to right
-      const compressedEndX = W - (N - slatIndex) * carrierBunchThickness;
-      targetX = originalX + (compressedEndX - originalX) * factor;
+      const compressedEndX = result.trackWidth - (N - slatIndex) * carrierBunchThickness;
+      targetX = originalPositionX + (compressedEndX - originalPositionX) * factor;
     } else {
       // Stack to left
-      const compressedStartX = (slatIndex - 1) * carrierBunchThickness + 10;
-      targetX = originalX - (originalX - compressedStartX) * factor;
+      const compressedStartX = (slatIndex - 1) * carrierBunchThickness + (result.firstSlatOffsetX ?? 44.5);
+      targetX = originalPositionX - (originalPositionX - compressedStartX) * factor;
     }
-    return originX + targetX * scale;
+    return trackStartX + targetX * scale;
   };
 
   // Louvre width projection based on tilt angle
@@ -438,7 +463,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                 fontWeight="bold"
                 textAnchor="middle"
               >
-                Sloped Track {result.railLength.toLocaleString()}mm (∠ {result.angleDeg}°)
+                Sloped Track {result.railLength.toLocaleString()}mm (Width {result.trackWidth}mm · Clearance -10L/-10R · ∠{result.angleDeg}°)
               </text>
             </g>
           )}
@@ -454,9 +479,11 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                 <>
                   <div className="flex items-center justify-between gap-4 font-bold border-b border-neutral-800 pb-1">
                     <span className="text-amber-400 font-mono">Slat #{current.index} of {result.totalSlats} sheets</span>
-                    <span className="text-neutral-400 font-mono">X = {current.positionX}mm</span>
+                    <span className="text-amber-300 font-mono">Track X = {current.positionX}mm</span>
                   </div>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 pt-0.5 text-[11px]">
+                    <span className="text-neutral-400">Opening X:</span>
+                    <span className="text-right font-mono text-neutral-300">{current.openingPositionX ?? Number((current.positionX + (result.trackDeductionLeft ?? 10)).toFixed(1))}mm</span>
                     <span className="text-neutral-400">Opening Height:</span>
                     <span className="text-right font-mono text-neutral-200">{current.windowHeight}mm</span>
                     <span className="text-neutral-400">Finished Drop:</span>

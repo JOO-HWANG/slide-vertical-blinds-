@@ -328,6 +328,69 @@ export const InputPanel: React.FC<InputPanelProps> = ({ input, onChange, onReset
             </div>
           </div>
         </div>
+
+        {/* Track Installation Clearance & First Slat Inset */}
+        <div className="p-3 bg-neutral-950/80 rounded-lg border border-neutral-800 space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1">
+            <span className="font-semibold text-neutral-300 flex items-center gap-1.5">
+              <span>Track Clearance & Louvre Inset Calibration</span>
+            </span>
+            <span className="text-[11px] text-amber-400 font-mono">
+              Track = Open - {((input.trackDeductionLeft ?? 10) + (input.trackDeductionRight ?? 10))}mm · Slat #1 @ {input.firstSlatOffsetX ?? (input.fabricWidth === 127 ? 63.5 : 44.5)}mm
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
+            <div className="space-y-1">
+              <label className="text-neutral-400 flex justify-between">
+                <span>Left Track Clearance</span>
+                <span className="text-neutral-500 font-mono">mm</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="50"
+                value={input.trackDeductionLeft ?? 10}
+                onChange={(e) => onChange({ trackDeductionLeft: Number(e.target.value) })}
+                className="w-full px-2.5 py-1.5 bg-neutral-900 border border-neutral-800 rounded text-white font-mono text-right focus:border-amber-500 focus:outline-none"
+              />
+              <div className="text-[10px] text-neutral-500">Workshop standard: 10mm</div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-neutral-400 flex justify-between">
+                <span>Right Track Clearance</span>
+                <span className="text-neutral-500 font-mono">mm</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="50"
+                value={input.trackDeductionRight ?? 10}
+                onChange={(e) => onChange({ trackDeductionRight: Number(e.target.value) })}
+                className="w-full px-2.5 py-1.5 bg-neutral-900 border border-neutral-800 rounded text-white font-mono text-right focus:border-amber-500 focus:outline-none"
+              />
+              <div className="text-[10px] text-neutral-500">Workshop standard: 10mm</div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-neutral-400 flex justify-between" title="Carrier X from track end to prevent slat overhanging rail">
+                <span>1st Slat Start Pos (X)</span>
+                <span className="text-amber-400 font-mono font-bold">mm</span>
+              </label>
+              <input
+                type="number"
+                step="0.5"
+                min="20"
+                max="100"
+                value={input.firstSlatOffsetX ?? (input.fabricWidth === 127 ? 63.5 : 44.5)}
+                onChange={(e) => onChange({ firstSlatOffsetX: Number(e.target.value) })}
+                className="w-full px-2.5 py-1.5 bg-neutral-900 border border-neutral-800 rounded text-amber-300 font-mono text-right focus:border-amber-500 focus:outline-none"
+              />
+              <div className="text-[10px] text-neutral-500">Half louvre width (89mm ÷ 2 = 44.5mm)</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Step 3: Job Order & Production Metadata */}
