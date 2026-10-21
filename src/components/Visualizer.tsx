@@ -142,7 +142,7 @@ export const Visualizer: React.FC<VisualizerProps> = ({
             <span>·</span>
             <span>Slope: {result.angleDeg}°</span>
             <span>·</span>
-            <span>Pitch: {result.actualPitch}mm</span>
+            <span>Pitch: Rail {result.actualPitchRail}mm (Horiz {result.actualPitch}mm)</span>
           </div>
         </div>
 
@@ -484,6 +484,8 @@ export const Visualizer: React.FC<VisualizerProps> = ({
                   <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 pt-0.5 text-[11px]">
                     <span className="text-neutral-400">Opening X:</span>
                     <span className="text-right font-mono text-neutral-300">{current.openingPositionX ?? Number((current.positionX + (result.trackDeductionLeft ?? 10)).toFixed(1))}mm</span>
+                    <span className="text-neutral-400">Rail Pos on Slope:</span>
+                    <span className="text-right font-mono text-sky-400">{current.carrierDistanceOnRail}mm</span>
                     <span className="text-neutral-400">Opening Height:</span>
                     <span className="text-right font-mono text-neutral-200">{current.windowHeight}mm</span>
                     <span className="text-neutral-400">Finished Drop:</span>

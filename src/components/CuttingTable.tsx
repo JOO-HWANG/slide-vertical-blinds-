@@ -92,10 +92,13 @@ export const CuttingTable: React.FC<CuttingTableProps> = ({
       {/* Table Header & Toolbar */}
       <div className="p-4 border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-sm font-bold text-white">Slat Cutting Schedule & Fabrication Table</h2>
-            <span className="text-xs font-mono text-neutral-400">
+            <span className="text-xs font-mono text-amber-400 font-semibold">
               Total {result.totalSlats} sheets
+            </span>
+            <span className="text-xs font-mono text-neutral-400">
+              (Rail Pitch: {result.actualPitchRail}mm · Horiz: {result.actualPitch}mm)
             </span>
           </div>
           <p className="text-xs text-neutral-400 mt-0.5">
@@ -271,7 +274,9 @@ export const CuttingTable: React.FC<CuttingTableProps> = ({
                   {/* Position X */}
                   <td className="py-2 px-3 text-right tabular-nums">
                     <div className="text-amber-300 font-semibold">{slat.positionX.toLocaleString()} mm</div>
-                    <div className="text-[10px] text-neutral-500">Open {slat.openingPositionX ?? (slat.positionX + 10)}mm</div>
+                    <div className="text-[10px] text-neutral-400 font-mono">
+                      Rail {slat.carrierDistanceOnRail}mm · Open {slat.openingPositionX ?? (slat.positionX + 10)}mm
+                    </div>
                   </td>
 
                   {/* Window opening height */}

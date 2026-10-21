@@ -39,7 +39,7 @@ const INITIAL_INPUT: BlindInput = {
   dBottom: 15,
   fTop: 20,
   fBottom: 50,
-  pitch: 76,
+  pitch: 75,
   trackDeductionLeft: 10, // 10mm left clearance
   trackDeductionRight: 10, // 10mm right clearance
   firstSlatOffsetX: 44.5, // 44.5mm start position for 89mm louvre
@@ -211,7 +211,7 @@ export default function App() {
                 <span className="text-xs text-neutral-500 font-mono">sheets</span>
               </div>
               <span className="text-[10px] text-neutral-400 font-mono">
-                Pitch {result.actualPitch}mm · Slat #1 @ {result.firstSlatOffsetX}mm
+                Rail: {result.actualPitchRail}mm (Horiz: {result.actualPitch}mm) · #1 @ {result.firstSlatOffsetX}mm
               </span>
             </div>
 
@@ -370,7 +370,9 @@ export default function App() {
               <div className="bg-neutral-950 p-2 rounded border border-neutral-800/80">
                 <div className="text-[10px] text-neutral-400">Slat Count & Fabric</div>
                 <div className="font-bold text-white mt-0.5">{result.totalSlats} sheets</div>
-                <div className="text-[10px] text-amber-400">Fabric {result.totalCutLengthMeters}m (Slat 1 @ 44.5)</div>
+                <div className="text-[10px] text-amber-400">
+                  {result.actualPitchRail}mm rail ({result.actualPitch}mm horiz)
+                </div>
               </div>
             </div>
           </div>

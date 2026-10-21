@@ -78,8 +78,8 @@ export const SlatLabelModal: React.FC<SlatLabelModalProps> = ({ input, result, o
                   <div className="grid grid-cols-2 gap-1 text-[10px] text-neutral-400 font-mono mt-1">
                     <div>Drop: {slat.finishedHeight}mm</div>
                     <div className="text-right">Angle: {slat.bevelAngleDeg}°</div>
-                    <div>Fabric: {input.fabricWidth}mm</div>
-                    <div className="text-right">X: {slat.positionX}mm</div>
+                    <div>Track X: {slat.positionX}mm</div>
+                    <div className="text-right">Rail: {slat.carrierDistanceOnRail}mm</div>
                   </div>
                 </div>
 

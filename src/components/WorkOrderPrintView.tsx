@@ -179,7 +179,9 @@ export const WorkOrderPrintView: React.FC<WorkOrderPrintViewProps> = ({
               </div>
               <div className="flex">
                 <span className="w-28 font-bold text-neutral-700">Total Slat Count:</span>
-                <span className="font-bold text-neutral-900 font-mono text-sm">{result.totalSlats} sheets</span>
+                <span className="font-bold text-neutral-900 font-mono text-sm">
+                  {result.totalSlats} sheets ({result.actualPitchRail}mm rail / {result.actualPitch}mm horiz)
+                </span>
               </div>
               <div className="flex">
                 <span className="w-28 font-bold text-neutral-700">Fabric Required:</span>
@@ -200,6 +202,7 @@ export const WorkOrderPrintView: React.FC<WorkOrderPrintViewProps> = ({
                 <th className="border border-neutral-400 py-1">Right Drop (HR)</th>
                 <th className="border border-neutral-400 py-1">Headrail Cut</th>
                 <th className="border border-neutral-400 py-1">Slope Angle</th>
+                <th className="border border-neutral-400 py-1">Pitch (Rail / Horiz)</th>
                 <th className="border border-neutral-400 py-1">Slat 1 Inset</th>
                 <th className="border border-neutral-400 py-1">Deductions (Top/Bot)</th>
                 <th className="border border-neutral-400 py-1">Hem Allowances</th>
@@ -213,6 +216,7 @@ export const WorkOrderPrintView: React.FC<WorkOrderPrintViewProps> = ({
                 <td className="border border-neutral-400 py-1">{input.heightRight} mm</td>
                 <td className="border border-neutral-400 py-1 font-bold text-blue-900">{result.railLength} mm</td>
                 <td className="border border-neutral-400 py-1 font-bold">{result.angleDeg}°</td>
+                <td className="border border-neutral-400 py-1 font-bold text-amber-800">{result.actualPitchRail} / {result.actualPitch} mm</td>
                 <td className="border border-neutral-400 py-1 font-bold">X = {result.firstSlatOffsetX} mm</td>
                 <td className="border border-neutral-400 py-1">-{input.dTop} / -{input.dBottom} mm</td>
                 <td className="border border-neutral-400 py-1 font-bold">+{input.fTop + input.fBottom} mm</td>

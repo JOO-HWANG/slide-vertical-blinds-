@@ -97,7 +97,12 @@ export interface MaterialCostBreakdown {
 
 export interface CalculationResult {
   totalSlats: number;
-  actualPitch: number;
+  actualPitch: number; // Actual horizontal pitch between slats (mm)
+  actualPitchRail: number; // Actual carrier pitch along sloped rail (mm)
+  effectiveNominalPitchHoriz: number; // Nominal pitch * cos(θ) (e.g. 75 * cos(θ) ≈ 68mm)
+  cosSlope: number; // cos(θ) reduction factor
+  carrierSpanHoriz: number; // Horizontal distance from Slat 1 to Slat N (mm)
+  carrierSpanRail: number; // Sloped rail distance from Slat 1 to Slat N (mm)
   deltaH: number; // HR - HL (mm)
   angleDeg: number; // Slope angle in degrees
   railLength: number; // True sloped rail length (mm)

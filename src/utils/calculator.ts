@@ -89,7 +89,7 @@ export function calculateBlind(
   const W = Math.max(100, Number(input.width) || 100);
   const HL = Math.max(100, Number(input.heightLeft) || 100);
   const HR = Math.max(100, Number(input.heightRight) || 100);
-  const pitch = Math.max(30, Number(input.pitch) || 76);
+  const pitch = Math.max(30, Number(input.pitch) || (input.fabricWidth === 127 ? 115 : 75));
   const dTop = Math.max(0, Number(input.dTop) || 0);
   const dBottom = Math.max(0, Number(input.dBottom) || 0);
   const fTop = Math.max(0, Number(input.fTop) || 0);
@@ -127,22 +127,47 @@ export function calculateBlind(
     railLength = cosVal > 0 ? Number((trackWidth / cosVal).toFixed(1)) : trackWidth;
   }
 
+  // Effective cosine of the track slope
+  // When track is sloped, carrier links run along the sloped headrail.
+  // Nominal pitch (e.g. 75mm) along the sloped track projects horizontally as 75 * cos(θ) ≈ 68mm.
+  let cosEff = 1.0;
+  if (input.shapeType === 'level') {
+    cosEff = 1.0;
+  } else if (input.shapeType === 'gable_peak') {
+    cosEff = railLength > 0 ? Math.min(1.0, trackWidth / railLength) : 1.0;
+  } else {
+    const cosVal = Math.cos(angleRad);
+    cosEff = cosVal > 0 ? Math.min(1.0, cosVal) : 1.0;
+  }
+  const cosSlope = Number(cosEff.toFixed(4));
+
   // Slat positions:
   // First slat center is at 44.5mm (half of 89mm louvre) so slat edge does not exceed track start (X = 0)
   const fabricHalfWidth = input.fabricWidth === 127 ? 63.5 : 44.5;
   const firstSlatOffsetX = input.firstSlatOffsetX !== undefined ? Number(input.firstSlatOffsetX) : fabricHalfWidth;
   const lastSlatOffsetX = Math.max(firstSlatOffsetX, trackWidth - firstSlatOffsetX);
-  const carrierSpan = lastSlatOffsetX - firstSlatOffsetX;
+  const carrierSpanHoriz = Math.max(0, lastSlatOffsetX - firstSlatOffsetX);
+  const carrierSpanRail = cosEff > 0 ? Number((carrierSpanHoriz / cosEff).toFixed(1)) : carrierSpanHoriz;
+
+  // Effective horizontal pitch covered by a carrier link along the sloped track:
+  // e.g. 75mm carrier pitch on a ~25° slope acts as 75 * cos(25°) ≈ 68mm horizontally.
+  // Dividing by the effective horizontal pitch (or sloped rail span / pitch) yields the proper increased slat count!
+  const effectiveNominalPitchHoriz = Math.max(20, Number((pitch * cosEff).toFixed(1)));
 
   let N = 1;
-  let pActual = 0;
-  if (carrierSpan <= 0) {
+  let pActualHoriz = 0;
+  let pActualRail = 0;
+
+  if (carrierSpanHoriz <= 0) {
     N = 1;
-    pActual = 0;
+    pActualHoriz = 0;
+    pActualRail = 0;
   } else {
-    const intervals = Math.max(1, Math.round(carrierSpan / pitch));
+    // Number of carrier link intervals along the sloped track
+    const intervals = Math.max(1, Math.round(carrierSpanHoriz / effectiveNominalPitchHoriz));
     N = intervals + 1;
-    pActual = carrierSpan / intervals;
+    pActualHoriz = Number((carrierSpanHoriz / intervals).toFixed(2));
+    pActualRail = cosEff > 0 ? Number((pActualHoriz / cosEff).toFixed(2)) : pActualHoriz;
   }
 
   const slats: SlatCalculationItem[] = [];
@@ -150,10 +175,10 @@ export function calculateBlind(
 
   for (let k = 1; k <= N; k++) {
     // Slat center X coordinate on track (starts at 44.5mm)
-    const xK_track = N === 1 ? firstSlatOffsetX : (firstSlatOffsetX + (k - 1) * pActual);
+    const xK_track = N === 1 ? firstSlatOffsetX : Number((firstSlatOffsetX + (k - 1) * pActualHoriz).toFixed(1));
 
     // Slat center X coordinate in window opening (track is inset 10mm from opening wall)
-    const xK_opening = trackDeductionLeft + xK_track;
+    const xK_opening = Number((trackDeductionLeft + xK_track).toFixed(1));
 
     let hWinK = HL;
     let localAngle = angleDeg;
@@ -185,8 +210,7 @@ export function calculateBlind(
     // Carrier rail coordinate along sloped track
     let carrierRailDist = 0;
     if (input.shapeType !== 'gable_peak') {
-      const cosVal = Math.cos(angleRad);
-      carrierRailDist = cosVal > 0 ? Number((xK_track / cosVal).toFixed(1)) : xK_track;
+      carrierRailDist = cosEff > 0 ? Number((xK_track / cosEff).toFixed(1)) : xK_track;
     } else {
       carrierRailDist = Number(xK_track.toFixed(1));
     }
@@ -224,7 +248,12 @@ export function calculateBlind(
 
   return {
     totalSlats: N,
-    actualPitch: Number(pActual.toFixed(1)),
+    actualPitch: Number(pActualHoriz.toFixed(1)),
+    actualPitchRail: Number(pActualRail.toFixed(1)),
+    effectiveNominalPitchHoriz,
+    cosSlope,
+    carrierSpanHoriz: Number(carrierSpanHoriz.toFixed(1)),
+    carrierSpanRail,
     deltaH: Math.round(deltaH),
     angleDeg,
     railLength,
@@ -254,7 +283,7 @@ export const PRESET_JOBS: Array<{ name: string; desc: string; input: Partial<Bli
       heightRight: 2100,
       fabricWidth: 89,
       shapeType: 'right_high',
-      pitch: 76,
+      pitch: 75,
       dTop: 45,
       dBottom: 15,
       fTop: 20,
@@ -275,7 +304,7 @@ export const PRESET_JOBS: Array<{ name: string; desc: string; input: Partial<Bli
       heightRight: 3400,
       fabricWidth: 89,
       shapeType: 'right_high',
-      pitch: 76,
+      pitch: 75,
       dTop: 45,
       dBottom: 20,
       fTop: 20,
@@ -296,7 +325,7 @@ export const PRESET_JOBS: Array<{ name: string; desc: string; input: Partial<Bli
       heightRight: 1400,
       fabricWidth: 89,
       shapeType: 'left_high',
-      pitch: 76,
+      pitch: 75,
       dTop: 45,
       dBottom: 15,
       fTop: 20,
@@ -318,7 +347,7 @@ export const PRESET_JOBS: Array<{ name: string; desc: string; input: Partial<Bli
       gablePeakHeight: 2500,
       gablePeakRatio: 0.5,
       shapeType: 'gable_peak',
-      pitch: 76,
+      pitch: 75,
       dTop: 45,
       dBottom: 15,
       fTop: 20,

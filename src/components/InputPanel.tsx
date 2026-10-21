@@ -13,7 +13,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({ input, onChange, onReset
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleFabricWidthChange = (val: 89 | 127) => {
-    const defaultPitch = val === 89 ? 76 : 115;
+    const defaultPitch = val === 89 ? 75 : 115;
     onChange({ fabricWidth: val, pitch: defaultPitch });
   };
 
@@ -312,19 +312,19 @@ export const InputPanel: React.FC<InputPanelProps> = ({ input, onChange, onReset
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-neutral-400" title="Carrier link pitch spacing">
-              Carrier Pitch (p)
+            <label className="text-xs font-medium text-neutral-400" title="Carrier link pitch spacing along the sloped headrail">
+              Carrier Pitch (p_rail)
             </label>
             <input
               type="number"
               min="40"
               max="160"
-              value={input.pitch || 76}
+              value={input.pitch || 75}
               onChange={(e) => onChange({ pitch: Number(e.target.value) })}
               className="w-full px-3 py-1.5 bg-neutral-950 border border-neutral-800 rounded-lg text-white font-mono text-right text-xs focus:border-amber-500 focus:outline-none"
             />
             <div className="text-[10px] text-neutral-500">
-              {input.fabricWidth === 89 ? '89mm: 76mm rec.' : '127mm: 115mm rec.'}
+              {input.fabricWidth === 89 ? '89mm: 75mm std' : '127mm: 115mm std'}
             </div>
           </div>
         </div>

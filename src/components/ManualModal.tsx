@@ -75,19 +75,35 @@ export const ManualModal: React.FC<ManualModalProps> = ({ onClose }) => {
             </div>
 
             <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 space-y-1">
-              <span className="text-amber-400 font-bold block">3. Carrier Position & Zero Overhang (X_k)</span>
+              <span className="text-amber-400 font-bold block">3. Sloped Carrier Pitch & Cosine Projection</span>
               <code className="text-neutral-200 block font-mono bg-neutral-900 p-1.5 rounded">
-                X_1 = 44.5mm (half of 89mm slat)
+                p_eff_horiz = p_nominal × cos(θ)
                 <br />
-                X_k = 44.5 + (k - 1) × p_actual
+                intervals = round( CarrierSpan_horiz / p_eff_horiz )
+                <br />
+                N = intervals + 1  (Slat Count)
               </code>
               <p className="text-neutral-400 text-[11px]">
-                Slat #1 starts @ 44.5mm so the outer fabric edge exactly bounds track start (X=0) with zero overhang.
+                Because carrier links run along the sloped track at angle θ, a nominal 75mm pitch projects horizontally as 75mm × cos(θ) (e.g. ~68mm at 25° slope). The slat count is scaled by this effective pitch to guarantee full louvre overlap with zero light leaks.
               </p>
             </div>
 
             <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 space-y-1">
-              <span className="text-amber-400 font-bold block">4. Slat Center Opening Height (H_win)</span>
+              <span className="text-amber-400 font-bold block">4. Carrier Position & Zero Overhang (X_k)</span>
+              <code className="text-neutral-200 block font-mono bg-neutral-900 p-1.5 rounded">
+                X_1 = 44.5mm (half of 89mm louvre)
+                <br />
+                X_k = 44.5 + (k - 1) × p_actual_horiz
+                <br />
+                S_rail(k) = X_k / cos(θ)
+              </code>
+              <p className="text-neutral-400 text-[11px]">
+                Slat #1 starts @ 44.5mm so the outer fabric edge exactly bounds track start (X=0) with zero overhang. Carrier spacing along the rail is p_actual_rail = p_actual_horiz / cos(θ).
+              </p>
+            </div>
+
+            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 space-y-1 col-span-1 sm:col-span-2">
+              <span className="text-amber-400 font-bold block">5. Slat Center Opening Height (H_win)</span>
               <code className="text-neutral-200 block font-mono bg-neutral-900 p-1.5 rounded">
                 x_open = 10mm + X_k
                 <br />
